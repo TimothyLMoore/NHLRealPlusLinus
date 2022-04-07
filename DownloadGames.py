@@ -4,6 +4,7 @@ The function in this file will download the data produced by the nhl for all gam
 dump a seperate CSV for each season in a folder called "hockey_scraper_data" from where the file was run.
 
 Author: Tim Moore
+Date: 22-04-06
 """
 
 import hockey_scraper
@@ -19,7 +20,7 @@ def downloadGames(years):
     """
 
     path = os.getcwd()
-    USER_PATH = os.join(path,"hockey_scraper_data")
+    USER_PATH = os.path.join(path,"hockey_scraper_data")
 
     if os.path.exists(USER_PATH):
         print("Path is good")
