@@ -11,6 +11,15 @@ import pandas as pd
 import os
 
 def CleanData(directory):
+    """
+    Data Cleaning function takes in all data in csvs folders
+    creates anew dataframe with events, periods, seconds elapsed, and all players playing
+    Then write that Dataframe to the csvs folder.
+
+    :param directory: directory where season csvs are lovated
+
+    :return: None
+    """
     drop_cols = ['Unnamed: 0',
                  'Game_Id',
                  'Date',
