@@ -33,7 +33,6 @@ def CleanData(directory):
                  'Away_Team',
                  'Home_Team',
                  'p1_name',
-                 'p1_ID',
                  'p2_name',
                  'p2_ID',
                  'p3_name',
