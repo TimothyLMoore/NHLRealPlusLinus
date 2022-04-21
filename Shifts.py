@@ -9,25 +9,15 @@ import pandas as pd
 import os
 
 def shifts(clean_data):
-    check_cols = ['Period',
-                  'awayPlayer1_id',
-                  'awayPlayer2_id',
-                  'awayPlayer3_id',
-                  'awayPlayer4_id',
-                  'awayPlayer5_id',
-                  'awayPlayer6_id',
-                  'homePlayer1_id',
-                  'homePlayer2_id',
-                  'homePlayer3_id',
-                  'homePlayer4_id',
-                  'homePlayer5_id',
-                  'homePlayer6_id']
-    home_cols = ['homePlayer1_id',
-                 'homePlayer2_id',
-                 'homePlayer3_id',
-                 'homePlayer4_id',
-                 'homePlayer5_id',
-                 'homePlayer6_id']
+    """
+    Further Data Cleaning function takes in previous dataframe and return a dataframe with each shift combined into 1 row
+
+    :param clean_data: dataframe output by previous module
+
+    :return: shift_df
+    """
+
+    # Create the output DF
     shift_df = pd.DataFrame(columns = ['Time', 'Goals',
                   'awayPlayer1_id',
                   'awayPlayer2_id',
@@ -41,31 +31,45 @@ def shifts(clean_data):
                   'homePlayer4_id',
                   'homePlayer5_id',
                   'homePlayer6_id'])
-    for i, row in clean_data.iterrows():
-        print(i)
-        if i == 100:
-            return shift_df
 
+    #Iterate through the cleaned df
+    for i, row in clean_data.iterrows():
+
+
+        if i % 1000 == 0:
+            print(i)
+
+        #Required for initial shift
         if i == 0:
             shift_start = row.copy()
+            goal = 0
+            start_time=0
+            last_index = -1
 
-        goal = 0
+
         if row['Event'] == "GOAL":
-            if row["p1_ID"] in row[home_cols]:
+            if row["p1_ID"] in [row['homePlayer1_id'], row['homePlayer2_id'],
+                                row['homePlayer3_id'], row['homePlayer4_id'],
+                                row['homePlayer5_id']]:
                 goal += 1
             else:
                 goal -= 1
 
-        if (shift_start['Period'] != row['Period'] or shift_start['awayPlayer1_id'] != row['awayPlayer1_id'] or
+        #Comparing rows to see shift changes ***Can this be cleaner?***
+        if (row["Unnamed: 0"] != last_index + 1 or shift_start['Period'] != row['Period'] or shift_start['awayPlayer1_id'] != row['awayPlayer1_id'] or
         shift_start['awayPlayer2_id'] != row['awayPlayer2_id'] or shift_start['awayPlayer3_id'] != row['awayPlayer3_id'] or
         shift_start['awayPlayer4_id'] != row['awayPlayer4_id'] or shift_start['awayPlayer5_id'] != row['awayPlayer5_id'] or
         shift_start['homePlayer1_id'] != row['homePlayer1_id'] or shift_start['homePlayer2_id'] != row['homePlayer2_id'] or
         shift_start['homePlayer3_id'] != row['homePlayer3_id'] or shift_start['homePlayer4_id'] != row['homePlayer4_id'] or
         shift_start['homePlayer5_id'] != row['homePlayer5_id'] or shift_start['awayPlayer6_id'] != row['awayPlayer6_id'] or
         shift_start['homePlayer6_id'] != row['homePlayer6_id']):
-            #print(shift_start)
-            if (last_shift["Seconds_Elapsed"]-shift_start["Seconds_Elapsed"]) != 0:
-                shift_df.loc[len(shift_df.index)] = [last_shift["Seconds_Elapsed"]-shift_start["Seconds_Elapsed"], goal,
+
+            toi = last_time-start_time
+
+            if toi == 0: #Can't have shift with 0 time
+                toi = 0.1
+
+            shift_df.loc[len(shift_df.index)] = [toi, goal,
                                                      shift_start['awayPlayer1_id'], shift_start['awayPlayer2_id'],
                                                      shift_start['awayPlayer3_id'], shift_start['awayPlayer4_id'],
                                                      shift_start['awayPlayer5_id'], shift_start['awayPlayer6_id'],
@@ -74,10 +78,13 @@ def shifts(clean_data):
                                                      shift_start['homePlayer5_id'], shift_start['homePlayer6_id']]
             goal = 0
             shift_start = row.copy()
+            start_time = last_time
+            if row["Unnamed: 0"] != last_index + 1:
+                start_time = row["Seconds_Elapsed"]
 
+        last_index = row["Unnamed: 0"]
+        last_time=row["Seconds_Elapsed"]
 
-
-        last_shift = row.copy()
 
     return shift_df
 
