@@ -94,5 +94,12 @@ if __name__ == '__main__':
     with open(os.path.join(directory,"CleanedData.csv"), "+r") as f:
         current_df = pd.read_csv(f)
     out_df = shifts(current_df)
+    TOI = out_df['Time'].copy()
+    out_df.drop(['Time'], axis = 1)
+    Goals = out_df['Goals'].copy()
+    out_df.drop(['Goals'], axis = 1)
     out_df.to_csv(os.path.join(directory,'Shifts.csv'))
+    TOI.to_csv(os.path.join(directory,'Shift_TOI.csv'))
+    Goals.to_csv(os.path.join(directory,'Shift_Goals.csv'))
+
 
