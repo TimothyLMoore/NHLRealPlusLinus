@@ -18,8 +18,8 @@ def shifts_converter(shift):
     for i in np_shift:
         shift_player = 0
         for j in i:
-            if j not in shift_dict:
-                shift_dict{j}
+            if 0 <= shift_player <= 5:
+                if j not in shift_dict
 
 
 if __name__ == '__main__':
