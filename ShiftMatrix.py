@@ -11,6 +11,12 @@ import numpy as np
 
 def shifts_converter(shift):
     shift_dict = {}
+    pd_time = shift['Time']
+    np_time = np.zeroes((len(pd_time), len(pd_time)), dtype=int)
+    np.fill_diagonal(np_time, pd_time)
+    pd_goal = shift['Goal']
+    np_goal = pd_goal.to_numpy()
+    tot_goal = np.absolute(np_goal)
     shift = shift.drop(['Unnamed: 0','Time', 'Goals'], axis = 1)
     np_shift = shift.to_numpy().astype(int)
 
