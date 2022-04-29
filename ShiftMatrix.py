@@ -8,13 +8,15 @@ Date: 22-04-22
 import pandas as pd
 import os
 import numpy as np
+from numpy.linalg import inv
 
 def shifts_converter(shift):
     shift_dict = {}
     pd_time = shift['Time']
     np_time = np.zeroes((len(pd_time), len(pd_time)), dtype=int)
     np.fill_diagonal(np_time, pd_time)
-    pd_goal = shift['Goal']
+    pd_goal = shift['Goal'].div(shift['Time'])
+    pd_goal = pd_goal.div(3600)
     np_goal = pd_goal.to_numpy()
     tot_goal = np.absolute(np_goal)
     shift = shift.drop(['Unnamed: 0','Time', 'Goals'], axis = 1)
@@ -48,9 +50,21 @@ def shifts_converter(shift):
             shift_matrix[i][j] = 1
 
 
-    print(np.shape(shift_matrix))
+    Xtw = np.matmul(shift_matrix, np_time)
+    XtwX = np.matmul(Xtw, np.transpose(shift_matrix))
+    ridge = np.add(XtwX, np.identity(len(shift_list)))
+    Xtwb = np.matmul(Xtw, np_goal)
+    XtwXinv = inv(ridge)
+    net_goals = np.matmul(XtwXinv, Xtwb)
 
-    return shift_matrix, np.absolute(shift_matrix)
+    Xtw = np.matmul(np.absolute(shift_matrix), np_time)
+    XtwX = np.matmul(Xtw, np.transpose(np.absolute(shift_matrix)))
+    ridge = np.add(XtwX, np.identity(len(shift_list)))
+    Xtwb = np.matmul(Xtw, tot_goal)
+    XtwXinv = inv(ridge)
+    tot_goals = np.matmul(XtwXinv, Xtwb)
+
+    return net_goals, tot_goals
 
 
 if __name__ == '__main__':
@@ -58,6 +72,6 @@ if __name__ == '__main__':
     directory = os.path.join(path,"hockey_scraper_data","csvs")
     with open(os.path.join(directory,"Shifts.csv"), "+r") as f:
         current_df = pd.read_csv(f)
-    net_shift_mat, tot_shift_mat  = shifts_converter(current_df)
-    #net_shift_mat.tofile(os.path.join(directory,'NetShiftMatrix.csv'), sep = ',')
-    #tot_shift_mat.tofile(os.path.join(directory,'TotalShiftMatrix.csv'), sep = ',')
+    net_goal_mat, tot_goal_mat  = shifts_converter(current_df)
+    net_shift_mat.tofile(os.path.join(directory,'NetGoals.csv'), sep = ',')
+    tot_shift_mat.tofile(os.path.join(directory,'TotalGoals.csv'), sep = ',')
