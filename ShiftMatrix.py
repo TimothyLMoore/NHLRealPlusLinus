@@ -12,10 +12,8 @@ from numpy.linalg import inv
 
 def shifts_converter(shift):
     shift_dict = {}
-    pd_time = shift['Time']
-    np_time = np.zeroes((len(pd_time), len(pd_time)), dtype=int)
-    np.fill_diagonal(np_time, pd_time)
-    pd_goal = shift['Goal'].div(shift['Time'])
+    time = shift['Time'].to_numpy()
+    pd_goal = shift['Goals'].div(shift['Time'])
     pd_goal = pd_goal.div(3600)
     np_goal = pd_goal.to_numpy()
     tot_goal = np.absolute(np_goal)
@@ -45,22 +43,21 @@ def shifts_converter(shift):
     shift_matrix = np.zeros((len(shift_list),len(shift)),dtype=int)
     for i in range(len(shift_list)):
         for j in shift_list[i][1][0]:
-            shift_matrix[i][j] = -1
+            shift_matrix[i][j] = -1 * time[j]
         for j in shift_list[i][1][1]:
-            shift_matrix[i][j] = 1
+            shift_matrix[i][j] = 1 * time[j]
 
 
-    Xtw = np.matmul(shift_matrix, np_time)
-    XtwX = np.matmul(Xtw, np.transpose(shift_matrix))
+    XtwX = np.matmul(shift_matrix, np.transpose(shift_matrix))
     ridge = np.add(XtwX, np.identity(len(shift_list)))
-    Xtwb = np.matmul(Xtw, np_goal)
+    Xtwb = np.matmul(shift_matrix, np_goal)
     XtwXinv = inv(ridge)
     net_goals = np.matmul(XtwXinv, Xtwb)
 
-    Xtw = np.matmul(np.absolute(shift_matrix), np_time)
-    XtwX = np.matmul(Xtw, np.transpose(np.absolute(shift_matrix)))
+
+    XtwX = np.matmul(np.absolute(shift_matrix), np.transpose(np.absolute(shift_matrix)))
     ridge = np.add(XtwX, np.identity(len(shift_list)))
-    Xtwb = np.matmul(Xtw, tot_goal)
+    Xtwb = np.matmul(np.absolute(shift_matrix), tot_goal)
     XtwXinv = inv(ridge)
     tot_goals = np.matmul(XtwXinv, Xtwb)
 
