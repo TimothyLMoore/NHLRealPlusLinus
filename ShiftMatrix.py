@@ -73,5 +73,5 @@ if __name__ == '__main__':
     with open(os.path.join(directory,"Shifts.csv"), "+r") as f:
         current_df = pd.read_csv(f)
     net_goal_mat, tot_goal_mat  = shifts_converter(current_df)
-    net_shift_mat.tofile(os.path.join(directory,'NetGoals.csv'), sep = ',')
-    tot_shift_mat.tofile(os.path.join(directory,'TotalGoals.csv'), sep = ',')
+    net_goal_mat.tofile(os.path.join(directory,'NetGoals.csv'), sep = ',')
+    tot_goal_mat.tofile(os.path.join(directory,'TotalGoals.csv'), sep = ',')
