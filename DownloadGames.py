@@ -32,7 +32,7 @@ def downloadGames(years):
         hockey_scraper.scrape_seasons([year], False, docs_dir=USER_PATH)
 
 if __name__ == '__main__':
-    years_to_download = [2020,2021]
+    years_to_download = [2021]
     downloadGames(years_to_download)
 
 
