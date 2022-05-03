@@ -60,7 +60,7 @@ def shifts_converter(shift):
     Xtwb = np.matmul(XtwXinv,w_shift_matrix)
     print("NetGoals.....")
     net_goals = np.matmul(Xtwb, np_goal)
-
+'''
     print("XtwX2.....")
     XtwX = np.matmul(np.absolute(w_shift_matrix), np.transpose(np.absolute(shift_matrix)))
     print("Ridge2...")
@@ -75,7 +75,7 @@ def shifts_converter(shift):
     total_time = np.absolute(w_shift_matrix).sum(axis=1)
 
     return np.transpose(net_goals), np.transpose(tot_goals), np.transpose(total_time)
-
+'''
 
 if __name__ == '__main__':
     path = os.getcwd()
