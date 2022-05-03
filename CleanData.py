@@ -9,6 +9,7 @@ Date: 22-04-06
 
 import pandas as pd
 import os
+import math
 
 def CleanData(directory):
     """
@@ -75,30 +76,31 @@ def CleanData(directory):
     df_5v5 = df[df['Strength'] == "5x5"]
 
     for i, row in df_5v5.iterrows():
-        if row["awayPlayer1_id"] not in player_list:
+        if row["awayPlayer1_id"] not in player_list and not (math.isnan(row["awayPlayer1_id"])):
             player_list[row["awayPlayer1_id"]] = row["awayPlayer1"]
-        if row["awayPlayer2_id"] not in player_list:
+        if row["awayPlayer2_id"] not in player_list and not (math.isnan(row["awayPlayer2_id"])):
             player_list[row["awayPlayer2_id"]] = row["awayPlayer2"]
-        if row["awayPlayer3_id"] not in player_list:
+        if row["awayPlayer3_id"] not in player_list and not (math.isnan(row["awayPlayer3_id"])):
             player_list[row["awayPlayer3_id"]] = row["awayPlayer3"]
-        if row["awayPlayer4_id"] not in player_list:
+        if row["awayPlayer4_id"] not in player_list and not (math.isnan(row["awayPlayer4_id"])):
             player_list[row["awayPlayer4_id"]] = row["awayPlayer4"]
-        if row["awayPlayer5_id"] not in player_list:
+        if row["awayPlayer5_id"] not in player_list and not (math.isnan(row["awayPlayer5_id"])):
             player_list[row["awayPlayer5_id"]] = row["awayPlayer5"]
-        if row["awayPlayer6_id"] not in player_list:
+        if row["awayPlayer6_id"] not in player_list and not (math.isnan(row["awayPlayer6_id"])):
             player_list[row["awayPlayer6_id"]] = row["awayPlayer6"]
-        if row["homePlayer1_id"] not in player_list:
+        if row["homePlayer1_id"] not in player_list and not (math.isnan(row["homePlayer1_id"])):
             player_list[row["homePlayer1_id"]] = row["homePlayer1"]
-        if row["homePlayer2_id"] not in player_list:
+        if row["homePlayer2_id"] not in player_list and not (math.isnan(row["homePlayer2_id"])):
             player_list[row["homePlayer2_id"]] = row["homePlayer2"]
-        if row["homePlayer3_id"] not in player_list:
+        if row["homePlayer3_id"] not in player_list and not (math.isnan(row["homePlayer3_id"])):
             player_list[row["homePlayer3_id"]] = row["homePlayer3"]
-        if row["homePlayer4_id"] not in player_list:
+        if row["homePlayer4_id"] not in player_list and not (math.isnan(row["homePlayer4_id"])):
             player_list[row["homePlayer4_id"]] = row["homePlayer4"]
-        if row["homePlayer5_id"] not in player_list:
+        if row["homePlayer5_id"] not in player_list and not (math.isnan(row["homePlayer5_id"])):
             player_list[row["homePlayer5_id"]] = row["homePlayer5"]
-        if row["homePlayer6_id"] not in player_list:
+        if row["homePlayer6_id"] not in player_list and not (math.isnan(row["homePlayer6_id"])):
             player_list[row["homePlayer6_id"]] = row["homePlayer6"]
+
 
     players = pd.DataFrame.from_dict(player_list, orient='index')
 

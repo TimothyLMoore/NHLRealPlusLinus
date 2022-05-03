@@ -72,7 +72,7 @@ def shifts_converter(shift):
     print("TotGoals.....")
     tot_goals = np.matmul(Xtwb, tot_goal)
 
-    total_time = w_shift_matrix.sum(axis=1)
+    total_time = np.absolute(w_shift_matrix).sum(axis=1)
 
     return np.transpose(net_goals), np.transpose(tot_goals), np.transpose(total_time)
 

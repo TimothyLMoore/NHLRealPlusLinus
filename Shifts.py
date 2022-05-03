@@ -37,7 +37,7 @@ def shifts(clean_data):
 
 
         if i % 1000 == 0:
-            print(i)
+            print(i/len(clean_data)*100, "%")
 
         #Required for initial shift
         if i == 0:
