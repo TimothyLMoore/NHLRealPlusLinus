@@ -11,6 +11,8 @@ import numpy as np
 from numpy.linalg import inv
 
 def shifts_converter(shift):
+    shift = shift.dropna()
+
     shift_dict = {}
     time = shift['Time'].to_numpy()
     pd_goal = shift['Goals'].div(shift['Time'])
@@ -33,12 +35,12 @@ def shifts_converter(shift):
             shift_player += 1
         shift_index += 1
 
-
+    play_order = []
     shift_list = []
     for key, val in shift_dict.items():
         shift_list.append([key, val])
+        play_order.append(key)
 
-    shift_list.sort()
 
     shift_matrix = np.zeros((len(shift_list),len(shift)),dtype=int)
     w_shift_matrix = np.zeros((len(shift_list),len(shift)),dtype=int)
@@ -48,7 +50,7 @@ def shifts_converter(shift):
             shift_matrix[i][j] = -1
         for j in shift_list[i][1][1]:
             w_shift_matrix[i][j] = 1 * time[j]
-            shift_matrix[i][j] = 1 * time[j]
+            shift_matrix[i][j] = 1
 
     print("XtwX1.....")
     XtwX = np.matmul(w_shift_matrix, np.transpose(shift_matrix))
@@ -60,7 +62,7 @@ def shifts_converter(shift):
     Xtwb = np.matmul(XtwXinv,w_shift_matrix)
     print("NetGoals.....")
     net_goals = np.matmul(Xtwb, np_goal)
-'''
+
     print("XtwX2.....")
     XtwX = np.matmul(np.absolute(w_shift_matrix), np.transpose(np.absolute(shift_matrix)))
     print("Ridge2...")
@@ -74,15 +76,19 @@ def shifts_converter(shift):
 
     total_time = np.absolute(w_shift_matrix).sum(axis=1)
 
-    return np.transpose(net_goals), np.transpose(tot_goals), np.transpose(total_time)
-'''
+    pd_net_goals = pd.DataFrame(net_goals, index = play_order, columns = ["NetGoals"])
+    pd_tot_goals = pd.DataFrame(tot_goals, index = play_order, columns = ["TotGoals"])
+    pd_toi = pd.DataFrame(total_time, index = play_order, columns = ["TOI"])
+
+    combined = pd.concat([pd_net_goals, pd_tot_goals,pd_toi], axis = 1)
+
+    return combined
+
 
 if __name__ == '__main__':
     path = os.getcwd()
     directory = os.path.join(path,"hockey_scraper_data","csvs")
     with open(os.path.join(directory,"Shifts.csv"), "+r") as f:
         current_df = pd.read_csv(f)
-    net_goal_mat, tot_goal_mat, TOI  = shifts_converter(current_df)
-    net_goal_mat.tofile(os.path.join(directory,'NetGoals.csv'), sep = ',')
-    tot_goal_mat.tofile(os.path.join(directory,'TotalGoals.csv'), sep = ',')
-    TOI.tofile(os.path.join(directory,'TOI.csv'), sep = ',')
+    combined_final  = shifts_converter(current_df)
+    combined_final.to_csv(os.path.join(directory,'Final.csv'))
