@@ -10,7 +10,7 @@ import os
 import numpy as np
 from numpy.linalg import inv
 
-def shifts_converter(shift):
+def shifts_converter(shift, players):
     shift = shift.dropna()
 
     shift_dict = {}
@@ -43,6 +43,8 @@ def shifts_converter(shift):
 
 
     shift_matrix = np.zeros((len(shift_list),len(shift)),dtype=int)
+    w_combined_shift = np.zeros((1,len(shift)),dtype=int)
+    combined_shift = np.zeros((1,len(shift)),dtype=int)
     w_shift_matrix = np.zeros((len(shift_list),len(shift)),dtype=int)
     for i in range(len(shift_list)):
         for j in shift_list[i][1][0]:
@@ -52,10 +54,28 @@ def shifts_converter(shift):
             w_shift_matrix[i][j] = 1 * time[j]
             shift_matrix[i][j] = 1
 
+    total_time = np.absolute(w_shift_matrix).sum(axis=1)
+    del_rows = []
+    for i in range(len(total_time)):
+        if total_time[i] < 90000:
+            combined_shift = np.add(combined_shift, shift_matrix[i])
+            w_combined_shift = np.add(w_combined_shift, w_shift_matrix[i])
+            del_rows.append(i)
+
+    shift_matrix = np.delete(shift_matrix, (del_rows), axis=0)
+    shift_matrix = np.append(shift_matrix,combined_shift, axis = 0)
+    w_shift_matrix = np.delete(w_shift_matrix, (del_rows), axis=0)
+    w_shift_matrix = np.append(w_shift_matrix,w_combined_shift, axis = 0)
+    total_time = np.delete(total_time, (del_rows), axis=0)
+
+
+    for i in sorted(del_rows, reverse=True):
+        del play_order[i]
+
     print("XtwX1.....")
     XtwX = np.matmul(w_shift_matrix, np.transpose(shift_matrix))
     print("Ridge1...")
-    ridge = np.add(XtwX, np.identity(len(shift_list)))
+    ridge = np.add(XtwX, np.identity(len(total_time)+1))
     print("Inverse1.....")
     XtwXinv = inv(ridge)
     print("Xtwb1.....")
@@ -66,7 +86,7 @@ def shifts_converter(shift):
     print("XtwX2.....")
     XtwX = np.matmul(np.absolute(w_shift_matrix), np.transpose(np.absolute(shift_matrix)))
     print("Ridge2...")
-    ridge = np.add(XtwX, np.identity(len(shift_list)))
+    ridge = np.add(XtwX, np.identity(len(total_time)+1))
     print("Inverse2.....")
     XtwXinv = inv(ridge)
     print("Xtwb2.....")
@@ -74,7 +94,7 @@ def shifts_converter(shift):
     print("TotGoals.....")
     tot_goals = np.matmul(Xtwb, tot_goal)
 
-    total_time = np.absolute(w_shift_matrix).sum(axis=1)
+
 
     pd_net_goals = pd.DataFrame(net_goals, index = play_order, columns = ["NetGoals"])
     pd_tot_goals = pd.DataFrame(tot_goals, index = play_order, columns = ["TotGoals"])
@@ -82,6 +102,9 @@ def shifts_converter(shift):
 
     combined = pd.concat([pd_net_goals, pd_tot_goals,pd_toi], axis = 1)
 
+    '''print(players)
+    print(combined)
+    combined.join(players, on=None, how='left')'''
     return combined
 
 
@@ -90,5 +113,7 @@ if __name__ == '__main__':
     directory = os.path.join(path,"hockey_scraper_data","csvs")
     with open(os.path.join(directory,"Shifts.csv"), "+r") as f:
         current_df = pd.read_csv(f)
-    combined_final  = shifts_converter(current_df)
+    with open(os.path.join(directory,"Players.csv"), "+r") as f:
+        player_df = pd.read_csv(f)
+    combined_final  = shifts_converter(current_df, player_df)
     combined_final.to_csv(os.path.join(directory,'Final.csv'))
