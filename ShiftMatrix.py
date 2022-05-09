@@ -11,6 +11,7 @@ import numpy as np
 from numpy.linalg import inv
 
 def shifts_converter(shift, players):
+
     shift = shift.dropna()
 
     shift_dict = {}
@@ -41,6 +42,8 @@ def shifts_converter(shift, players):
         shift_list.append([key, val])
         play_order.append(key)
 
+    play_order.append(9999999)
+
 
     shift_matrix = np.zeros((len(shift_list),len(shift)),dtype=int)
     w_combined_shift = np.zeros((1,len(shift)),dtype=int)
@@ -67,6 +70,7 @@ def shifts_converter(shift, players):
     w_shift_matrix = np.delete(w_shift_matrix, (del_rows), axis=0)
     w_shift_matrix = np.append(w_shift_matrix,w_combined_shift, axis = 0)
     total_time = np.delete(total_time, (del_rows), axis=0)
+    total_time = np.append(total_time,np.absolute(w_combined_shift).sum(axis=1), axis = 0)
 
 
     for i in sorted(del_rows, reverse=True):
@@ -74,25 +78,35 @@ def shifts_converter(shift, players):
 
     print("XtwX1.....")
     XtwX = np.matmul(w_shift_matrix, np.transpose(shift_matrix))
+    print(XtwX)
     print("Ridge1...")
-    ridge = np.add(XtwX, np.identity(len(total_time)+1))
+    ridge = np.add(XtwX, np.identity(len(total_time)))
+    print(ridge)
     print("Inverse1.....")
     XtwXinv = inv(ridge)
+    print(XtwXinv)
     print("Xtwb1.....")
     Xtwb = np.matmul(XtwXinv,w_shift_matrix)
+    print(Xtwb)
     print("NetGoals.....")
     net_goals = np.matmul(Xtwb, np_goal)
+    print(net_goals)
 
     print("XtwX2.....")
     XtwX = np.matmul(np.absolute(w_shift_matrix), np.transpose(np.absolute(shift_matrix)))
+    print(XtwX)
     print("Ridge2...")
-    ridge = np.add(XtwX, np.identity(len(total_time)+1))
+    ridge = np.add(XtwX, np.identity(len(total_time)))
+    print(ridge)
     print("Inverse2.....")
     XtwXinv = inv(ridge)
+    print(XtwXinv)
     print("Xtwb2.....")
     Xtwb = np.matmul(XtwXinv,np.absolute(w_shift_matrix))
+    print(Xtwb)
     print("TotGoals.....")
     tot_goals = np.matmul(Xtwb, tot_goal)
+    print(tot_goals)
 
 
 
@@ -100,7 +114,7 @@ def shifts_converter(shift, players):
     pd_tot_goals = pd.DataFrame(tot_goals, index = play_order, columns = ["TotGoals"])
     pd_toi = pd.DataFrame(total_time, index = play_order, columns = ["TOI"])
 
-    combined = pd.concat([pd_net_goals, pd_tot_goals,pd_toi], axis = 1)
+    combined = pd.concat([pd_net_goals, pd_tot_goals, pd_toi], axis = 1)
 
     '''print(players)
     print(combined)
