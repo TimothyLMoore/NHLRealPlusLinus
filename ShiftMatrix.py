@@ -11,7 +11,9 @@ import numpy as np
 from numpy.linalg import inv
 
 def shifts_converter(shift, players):
-
+    print(players)
+    new_row = {'PlayerID':9999999, 'Player':"Replacement Player"}
+    players = players.append(new_row, ignore_index=True)
     shift = shift.dropna()
 
     shift_dict = {}
@@ -29,7 +31,7 @@ def shifts_converter(shift, players):
         for j in i:
             if j not in shift_dict:
                 shift_dict[j] = [[],[]]
-            if 0 <= shift_player <= 5:
+            if 0 <= shift_player <= 4:
                 shift_dict[j][0].append(shift_index)
             else:
                 shift_dict[j][1].append(shift_index)
@@ -78,47 +80,40 @@ def shifts_converter(shift, players):
 
     print("XtwX1.....")
     XtwX = np.matmul(w_shift_matrix, np.transpose(shift_matrix))
-    print(XtwX)
     print("Ridge1...")
     ridge = np.add(XtwX, np.identity(len(total_time)))
-    print(ridge)
     print("Inverse1.....")
     XtwXinv = inv(ridge)
-    print(XtwXinv)
     print("Xtwb1.....")
     Xtwb = np.matmul(XtwXinv,w_shift_matrix)
-    print(Xtwb)
     print("NetGoals.....")
     net_goals = np.matmul(Xtwb, np_goal)
-    print(net_goals)
+
 
     print("XtwX2.....")
     XtwX = np.matmul(np.absolute(w_shift_matrix), np.transpose(np.absolute(shift_matrix)))
-    print(XtwX)
     print("Ridge2...")
     ridge = np.add(XtwX, np.identity(len(total_time)))
-    print(ridge)
     print("Inverse2.....")
     XtwXinv = inv(ridge)
-    print(XtwXinv)
     print("Xtwb2.....")
     Xtwb = np.matmul(XtwXinv,np.absolute(w_shift_matrix))
-    print(Xtwb)
     print("TotGoals.....")
     tot_goals = np.matmul(Xtwb, tot_goal)
-    print(tot_goals)
 
+    pd_players = pd.DataFrame(play_order, columns = ["PlayerID"])
+    pd_players = pd.merge(pd_players, players, on = "PlayerID", how = "inner")
+    pd_net_goals = pd.DataFrame(net_goals, columns = ["NetGoals"])
+    pd_tot_goals = pd.DataFrame(tot_goals, columns = ["TotGoals"])
+    pd_toi = pd.DataFrame(total_time, columns = ["TOI"])
+    pd_toi = pd_toi.divide(60)
 
+    combined = pd.concat([pd_players, pd_net_goals, pd_tot_goals, pd_toi], axis = 1)
+    combined['Offense'] = combined["NetGoals"] + combined["TotGoals"]
+    combined['Offense'] = combined['Offense'].divide(2)
+    combined['Defense'] = combined["NetGoals"] - combined["TotGoals"]
+    combined['Defense'] = combined['Defense'].divide(2)
 
-    pd_net_goals = pd.DataFrame(net_goals, index = play_order, columns = ["NetGoals"])
-    pd_tot_goals = pd.DataFrame(tot_goals, index = play_order, columns = ["TotGoals"])
-    pd_toi = pd.DataFrame(total_time, index = play_order, columns = ["TOI"])
-
-    combined = pd.concat([pd_net_goals, pd_tot_goals, pd_toi], axis = 1)
-
-    '''print(players)
-    print(combined)
-    combined.join(players, on=None, how='left')'''
     return combined
 
 
@@ -128,6 +123,6 @@ if __name__ == '__main__':
     with open(os.path.join(directory,"Shifts.csv"), "+r") as f:
         current_df = pd.read_csv(f)
     with open(os.path.join(directory,"Players.csv"), "+r") as f:
-        player_df = pd.read_csv(f)
-    combined_final  = shifts_converter(current_df, player_df)
+        player_df = pd.read_csv(f, header=None, names=['PlayerID', 'Player'])
+    combined_final = shifts_converter(current_df, player_df)
     combined_final.to_csv(os.path.join(directory,'Final.csv'))

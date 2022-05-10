@@ -24,13 +24,12 @@ def shifts(clean_data):
                   'awayPlayer3_id',
                   'awayPlayer4_id',
                   'awayPlayer5_id',
-                  'awayPlayer6_id',
                   'homePlayer1_id',
                   'homePlayer2_id',
                   'homePlayer3_id',
                   'homePlayer4_id',
                   'homePlayer5_id',
-                  'homePlayer6_id'])
+                  ])
 
     #Iterate through the cleaned df
     for i, row in clean_data.iterrows():
@@ -61,21 +60,19 @@ def shifts(clean_data):
         shift_start['awayPlayer4_id'] != row['awayPlayer4_id'] or shift_start['awayPlayer5_id'] != row['awayPlayer5_id'] or
         shift_start['homePlayer1_id'] != row['homePlayer1_id'] or shift_start['homePlayer2_id'] != row['homePlayer2_id'] or
         shift_start['homePlayer3_id'] != row['homePlayer3_id'] or shift_start['homePlayer4_id'] != row['homePlayer4_id'] or
-        shift_start['homePlayer5_id'] != row['homePlayer5_id'] or shift_start['awayPlayer6_id'] != row['awayPlayer6_id'] or
-        shift_start['homePlayer6_id'] != row['homePlayer6_id']):
+        shift_start['homePlayer5_id'] != row['homePlayer5_id']):
 
             toi = last_time-start_time
 
-            if toi == 0: #Can't have shift with 0 time
-                toi = 0.1
+            if toi <= 0: #Can't have shift with 0 time
+                toi = 1
 
             shift_df.loc[len(shift_df.index)] = [toi, goal,
                                                      shift_start['awayPlayer1_id'], shift_start['awayPlayer2_id'],
                                                      shift_start['awayPlayer3_id'], shift_start['awayPlayer4_id'],
-                                                     shift_start['awayPlayer5_id'], shift_start['awayPlayer6_id'],
-                                                     shift_start['homePlayer1_id'], shift_start['homePlayer2_id'],
-                                                     shift_start['homePlayer3_id'], shift_start['homePlayer4_id'],
-                                                     shift_start['homePlayer5_id'], shift_start['homePlayer6_id']]
+                                                     shift_start['awayPlayer5_id'], shift_start['homePlayer1_id'],
+                                                 shift_start['homePlayer2_id'], shift_start['homePlayer3_id'],
+                                                 shift_start['homePlayer4_id'], shift_start['homePlayer5_id']]
             goal = 0
             shift_start = row.copy()
             start_time = last_time
