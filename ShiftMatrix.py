@@ -1,6 +1,6 @@
 """Create: Players shift matrix (player x shifts matrix with 1 if the players plays home team on the shift -1 if away)
 
-The function in this file will load in the Shift CSV conver tit to the required np.array for calculations
+The function in this file will load in the Shift CSV convert it to the required np.array for calculations
 
 Author: Tim Moore
 Date: 22-04-22
