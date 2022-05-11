@@ -11,7 +11,7 @@ import numpy as np
 from numpy.linalg import inv
 
 def shifts_converter(shift, players):
-    print(players)
+
     new_row = {'PlayerID':9999999, 'Player':"Replacement Player"}
     players = players.append(new_row, ignore_index=True)
     shift = shift.dropna()
@@ -21,6 +21,10 @@ def shifts_converter(shift, players):
     pd_goal = shift['Goals'].div(shift['Time'])
     pd_goal = pd_goal.multiply(3600)
     np_goal = pd_goal.to_numpy()
+    pd_netCorsi = shift['NetCorsi'].div(shift['Time']).multiply(3600)
+    np_netCorsi = pd_netCorsi.to_numpy()
+    pd_totCorsi = shift['TotCorsi'].div(shift['Time']).multiply(3600)
+    np_totCorsi = pd_totCorsi.to_numpy()
     tot_goal = np.absolute(np_goal)
     shift = shift.drop(['Unnamed: 0','Time', 'Goals'], axis = 1)
     np_shift = shift.to_numpy().astype(int)
@@ -88,6 +92,8 @@ def shifts_converter(shift, players):
     Xtwb = np.matmul(XtwXinv,w_shift_matrix)
     print("NetGoals.....")
     net_goals = np.matmul(Xtwb, np_goal)
+    print("NetCorsi.....")
+    net_corsi = np.matmul(Xtwb, np_netCorsi)
 
 
     print("XtwX2.....")
@@ -100,6 +106,8 @@ def shifts_converter(shift, players):
     Xtwb = np.matmul(XtwXinv,np.absolute(w_shift_matrix))
     print("TotGoals.....")
     tot_goals = np.matmul(Xtwb, tot_goal)
+    print("TotCorsi.....")
+    tot_corsi = np.matmul(Xtwb, np_totCorsi)
 
     pd_players = pd.DataFrame(play_order, columns = ["PlayerID"])
     pd_players = pd.merge(pd_players, players, on = "PlayerID", how = "inner")
@@ -107,12 +115,18 @@ def shifts_converter(shift, players):
     pd_tot_goals = pd.DataFrame(tot_goals, columns = ["TotGoals"])
     pd_toi = pd.DataFrame(total_time, columns = ["TOI"])
     pd_toi = pd_toi.divide(60)
+    pd_net_corsi = pd.DataFrame(net_corsi, columns = ["NetCorsi"])
+    pd_tot_corsi = pd.DataFrame(tot_corsi, columns = ["TotCorsi"])
 
-    combined = pd.concat([pd_players, pd_net_goals, pd_tot_goals, pd_toi], axis = 1)
+    combined = pd.concat([pd_players, pd_toi, pd_net_goals, pd_tot_goals, pd_net_corsi, pd_tot_corsi], axis = 1)
     combined['Offense'] = combined["NetGoals"] + combined["TotGoals"]
     combined['Offense'] = combined['Offense'].divide(2)
     combined['Defense'] = combined["NetGoals"] - combined["TotGoals"]
     combined['Defense'] = combined['Defense'].divide(2)
+    combined['OffCorsi'] = combined["NetCorsi"] + combined["TotCorsi"]
+    combined['OffCorsi'] = combined['OffCorsi'].divide(2)
+    combined['DefCorsi'] = combined["NetCorsi"] - combined["TotCorsi"]
+    combined['DefCorsi'] = combined['DefCorsi'].divide(2)
 
     return combined
 
