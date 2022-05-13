@@ -1,6 +1,6 @@
-"""Create: Players shift matrix (player x shifts matrix with 1 if the players plays home team on the shift -1 if away)
+"""This file completes the process of the calculation
 
-Complete the calculations
+Output a CSV with Players, Net Goals/60, Total Goals/60, Net Corsi/60, Total Corsi/60 and Offense and Defnse Contributions
 
 Author: Tim Moore
 Date: 22-04-22
@@ -11,6 +11,14 @@ import numpy as np
 from numpy.linalg import inv
 
 def shifts_converter(shift, players):
+     """
+    Combines Shift and Players CSV
+
+    :param shift: dataframe output by previous module
+           players: Data frame with Players ID and Names for join
+
+    :return: combined: Dataframe with all desired information
+    """
 
     new_row = {'PlayerID':9999999, 'Player':"Replacement Player"}
     players = players.append(new_row, ignore_index=True)
