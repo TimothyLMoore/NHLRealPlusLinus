@@ -26,8 +26,9 @@ def shifts_converter(shift, players):
     pd_totCorsi = shift['TotCorsi'].div(shift['Time']).multiply(3600)
     np_totCorsi = pd_totCorsi.to_numpy()
     tot_goal = np.absolute(np_goal)
-    shift = shift.drop(['Unnamed: 0','Time', 'Goals'], axis = 1)
+    shift = shift.drop(['Unnamed: 0','Time', 'Goals','NetCorsi','TotCorsi'], axis = 1)
     np_shift = shift.to_numpy().astype(int)
+
 
     shift_index = 0
     for i in np_shift:
@@ -66,7 +67,7 @@ def shifts_converter(shift, players):
     total_time = np.absolute(w_shift_matrix).sum(axis=1)
     del_rows = []
     for i in range(len(total_time)):
-        if total_time[i] < 90000:
+        if total_time[i] < 75000:
             combined_shift = np.add(combined_shift, shift_matrix[i])
             w_combined_shift = np.add(w_combined_shift, w_shift_matrix[i])
             del_rows.append(i)
