@@ -11,7 +11,7 @@ import numpy as np
 from numpy.linalg import inv
 
 def shifts_converter(shift, players):
-     """
+    """
     Combines Shift and Players CSV
 
     :param shift: dataframe output by previous module
@@ -20,10 +20,13 @@ def shifts_converter(shift, players):
     :return: combined: Dataframe with all desired information
     """
 
+    #All players not reaching the required TOI will be merged into 1 replacement player
     new_row = {'PlayerID':9999999, 'Player':"Replacement Player"}
     players = players.append(new_row, ignore_index=True)
+
     shift = shift.dropna()
 
+    #Comvert all CSV data into the required Numpy Matices
     shift_dict = {}
     time = shift['Time'].to_numpy()
     pd_goal = shift['Goals'].div(shift['Time'])
@@ -37,7 +40,7 @@ def shifts_converter(shift, players):
     shift = shift.drop(['Unnamed: 0','Time', 'Goals','NetCorsi','TotCorsi'], axis = 1)
     np_shift = shift.to_numpy().astype(int)
 
-
+    #Loops through shifts adding player and the number of there shift to the dictionary [0] is away [1] is home
     shift_index = 0
     for i in np_shift:
         shift_player = 0
@@ -51,6 +54,7 @@ def shifts_converter(shift, players):
             shift_player += 1
         shift_index += 1
 
+    #Change shift_dict to list for easier iteration **Is this necessary?**
     play_order = []
     shift_list = []
     for key, val in shift_dict.items():
@@ -59,7 +63,7 @@ def shifts_converter(shift, players):
 
     play_order.append(9999999)
 
-
+    # Create np matrices for the final computation
     shift_matrix = np.zeros((len(shift_list),len(shift)),dtype=int)
     w_combined_shift = np.zeros((1,len(shift)),dtype=int)
     combined_shift = np.zeros((1,len(shift)),dtype=int)
@@ -72,6 +76,7 @@ def shifts_converter(shift, players):
             w_shift_matrix[i][j] = 1 * time[j]
             shift_matrix[i][j] = 1
 
+    #Merge players with <75000 seconds of icetime
     total_time = np.absolute(w_shift_matrix).sum(axis=1)
     del_rows = []
     for i in range(len(total_time)):
@@ -80,17 +85,17 @@ def shifts_converter(shift, players):
             w_combined_shift = np.add(w_combined_shift, w_shift_matrix[i])
             del_rows.append(i)
 
+    #Clean other matrices
     shift_matrix = np.delete(shift_matrix, (del_rows), axis=0)
     shift_matrix = np.append(shift_matrix,combined_shift, axis = 0)
     w_shift_matrix = np.delete(w_shift_matrix, (del_rows), axis=0)
     w_shift_matrix = np.append(w_shift_matrix,w_combined_shift, axis = 0)
     total_time = np.delete(total_time, (del_rows), axis=0)
     total_time = np.append(total_time,np.absolute(w_combined_shift).sum(axis=1), axis = 0)
-
-
     for i in sorted(del_rows, reverse=True):
         del play_order[i]
 
+    #((Xt * weight * X) + I)^1 * (Xt * weight * y) for Net/Total and Goals/Corsi
     print("XtwX1.....")
     XtwX = np.matmul(w_shift_matrix, np.transpose(shift_matrix))
     print("Ridge1...")
@@ -118,6 +123,8 @@ def shifts_converter(shift, players):
     print("TotCorsi.....")
     tot_corsi = np.matmul(Xtwb, np_totCorsi)
 
+
+    #Merge Data into final output
     pd_players = pd.DataFrame(play_order, columns = ["PlayerID"])
     pd_players = pd.merge(pd_players, players, on = "PlayerID", how = "inner")
     pd_net_goals = pd.DataFrame(net_goals, columns = ["NetGoals"])
