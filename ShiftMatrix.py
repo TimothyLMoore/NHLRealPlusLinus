@@ -22,7 +22,9 @@ def shifts_converter(shift, players):
 
     #All players not reaching the required TOI will be merged into 1 replacement player
     new_row = {'PlayerID':9999999, 'Player':"Replacement Player"}
+    new_row2 = {'PlayerID':1111111, 'Player':"Intercept"}
     players = players.append(new_row, ignore_index=True)
+    players = players.append(new_row2, ignore_index=True)
 
     shift = shift.dropna()
 
@@ -62,6 +64,7 @@ def shifts_converter(shift, players):
         play_order.append(key)
 
     play_order.append(9999999)
+    play_order.append(1111111)
 
     # Create np matrices for the final computation
     shift_matrix = np.zeros((len(shift_list),len(shift)),dtype=int)
@@ -88,10 +91,17 @@ def shifts_converter(shift, players):
     #Clean other matrices
     shift_matrix = np.delete(shift_matrix, (del_rows), axis=0)
     shift_matrix = np.append(shift_matrix,combined_shift, axis = 0)
+    shift_matrix = np.append(shift_matrix,np.ones((1,len(shift))), axis = 0)
     w_shift_matrix = np.delete(w_shift_matrix, (del_rows), axis=0)
     w_shift_matrix = np.append(w_shift_matrix,w_combined_shift, axis = 0)
+    time = np.reshape(time, (1,len(time)))
+    print(np.shape(w_shift_matrix))
+    print(np.shape(time))
+    w_shift_matrix = np.append(w_shift_matrix,time, axis = 0)
     total_time = np.delete(total_time, (del_rows), axis=0)
     total_time = np.append(total_time,np.absolute(w_combined_shift).sum(axis=1), axis = 0)
+    total_time = np.append(total_time,np.absolute(w_combined_shift).sum(axis=1), axis = 0)
+
     for i in sorted(del_rows, reverse=True):
         del play_order[i]
 
@@ -99,7 +109,7 @@ def shifts_converter(shift, players):
     print("XtwX1.....")
     XtwX = np.matmul(w_shift_matrix, np.transpose(shift_matrix))
     print("Ridge1...")
-    ridge = np.add(XtwX, np.identity(len(total_time)))
+    ridge = np.add(XtwX, np.diag(np.full(len(total_time),7500)))
     print("Inverse1.....")
     XtwXinv = inv(ridge)
     print("Xtwb1.....")
@@ -113,7 +123,7 @@ def shifts_converter(shift, players):
     print("XtwX2.....")
     XtwX = np.matmul(np.absolute(w_shift_matrix), np.transpose(np.absolute(shift_matrix)))
     print("Ridge2...")
-    ridge = np.add(XtwX, np.identity(len(total_time)))
+    ridge = np.add(XtwX, np.diag(np.full(len(total_time),7500)))
     print("Inverse2.....")
     XtwXinv = inv(ridge)
     print("Xtwb2.....")
