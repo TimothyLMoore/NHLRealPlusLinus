@@ -28,7 +28,7 @@ def shifts_converter(shift, players):
 
     shift = shift.dropna()
 
-    #Comvert all CSV data into the required Numpy Matices
+    #Convert all CSV data into the required Numpy Matices
     shift_dict = {}
     time = shift['Time'].to_numpy()
     pd_goal = shift['Goals'].div(shift['Time'])
