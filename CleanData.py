@@ -17,7 +17,7 @@ def CleanData(directory):
     creates anew dataframe with events, periods, seconds elapsed, and all players playing
     Then write that Dataframe to the csvs folder.
 
-    :param directory: directory where season csvs are lovated
+    :param directory: directory where season csvs are located
 
     :return: None
     """
